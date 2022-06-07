@@ -1,11 +1,85 @@
-import type {CenterPoint, Circle, Color, CircleColors, CirclePosition, CirclePositions, CircleShape, RandomOffset, RandomSize} from './types';
+import type {CenterPoint,
+    Circle,
+    Color,
+    CircleColors,
+    CirclePosition, CirclePositions, CircleShape, RandomOffset, RandomSize, ModalParameters} from './types';
+
+declare global {
+    interface Window { ModalParameters: ModalParameters }
+}
+
 
 // controllable parameters:
 // density
 // max size
 // glow brightness
 
-drawBlobs();
+//drawBlobs();
+
+
+
+function drawStartModal(): void {
+    window.ModalParameters = {
+        "quantity": 100,
+        "density": 20,
+        "maxSize": 100,
+    };
+    const main = document.getElementsByClassName('main')[0];
+    const modalBaseHTML = `
+        <div class='modal-container'>
+            <div class='modal'>
+                <label>Quantity</label>
+                <input id='quantity-input' name='quantity'></input>
+                <label>Density</label>
+                <input id='density-input' name='density'></input>
+                <label>Max Size</label>
+                <input id='max-size-input' name='maxSize'></input>
+                <button id='modal-button' type='button'>Generate</button>
+            </div>
+        </div>
+    `
+    if (!main) return;
+    main.innerHTML = modalBaseHTML;
+    const modalButton = document.getElementById('modal-button');
+
+    if (modalButton) {
+        modalButton.onclick = onClickGenerateBtn; 
+    }
+
+    const quantityInput = document.getElementById('quantity-input') as HTMLInputElement;
+    if (quantityInput) {
+        quantityInput.oninput = onParameterInput;
+    }
+
+    const densityInput = document.getElementById('density-input') as HTMLInputElement;
+    if (densityInput) {
+        densityInput.oninput = onParameterInput;
+    }
+
+    const maxSizeInput = document.getElementById('max-size-input') as HTMLInputElement;
+    if (maxSizeInput) {
+        maxSizeInput.oninput = onParameterInput;
+    }
+}
+
+function closeModal(): void {
+    const modalContainer = document.getElementsByClassName('modal-container')[0];
+    if (!modalContainer) return;
+    modalContainer.classList.add('hide');
+}
+
+function onParameterInput(this: GlobalEventHandlers, event: Event): void {
+    console.log(event);
+    const target = (event.target as HTMLInputElement);
+    const key = target.name;
+    const value = target.value;
+    window.ModalParameters[key] = parseInt(value); 
+}
+
+function onClickGenerateBtn(): void {
+    closeModal();
+    drawBlobs();
+}
 
 function drawBlobs(): void {
     const circlePositions: CirclePositions = new Array<CirclePosition>();
@@ -14,7 +88,7 @@ function drawBlobs(): void {
     const mainWidth = (main?.clientWidth || 0);
     const mainHeight = (main?.clientHeight || 0);
 
-    for (let i = 0; i < 500; i++) {
+    for (let i = 0; i < window.ModalParameters["quantity"] && i < 900; i++) {
         const circlePosition = generateCirclePosition(mainWidth, mainHeight);
         const positionIsAvailable = isCirclePositionAvailable(circlePosition, circlePositions);
         if (positionIsAvailable == false){
@@ -65,7 +139,7 @@ function generateCirclePosition(containerWidth: number, containerHeight: number)
 
 function isCirclePositionAvailable(newPosition: CirclePosition, circlePositions: CirclePositions): boolean {
     for (const circle of circlePositions) {
-        const centerDistance = getDistance(newPosition.center, circle.center) - 20;
+        const centerDistance = getDistance(newPosition.center, circle.center) - window.ModalParameters["density"];
         const radiusA = newPosition.radius;
         const radiusB = circle.radius;
         const radiiSumSquared = (radiusA + radiusB) ^ 2;
@@ -143,7 +217,7 @@ function circleShapeToString(circleShape: CircleShape): string {
 }
 
 function getRandomSize(): RandomSize {
-    const randomSize = Math.random() * 125
+    const randomSize = Math.random() * window.ModalParameters["maxSize"];
     return {width: randomSize, height: randomSize}
 }
 
@@ -192,3 +266,5 @@ function getRandomDegrees(): number {
 function createLinearGradient(color1: string, color2: string, degrees: number): string {
     return `linear-gradient(${degrees}deg, ${color1} 0%, ${color2} 100%)`
 }
+
+drawStartModal();

@@ -1,3 +1,7 @@
+export type ModalParameters = {
+    [key: string]: number,
+}
+
 export type Circle = {
     htmlContainer: HTMLElement,
     htmlElement: HTMLElement,
