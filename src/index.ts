@@ -29,11 +29,35 @@ function drawStartModal(): void {
         <div class='modal-container'>
             <div class='modal'>
                 <label>Quantity</label>
-                <input id='quantity-input' name='quantity'></input>
+                <input
+                    type='range'
+                    min='1'
+                    max='300'
+                    value= ${window.ModalParameters.quantity}
+                    class='modal-slider'
+                    id='quantity-input'
+                    name='quantity'>
+                </input>
                 <label>Density</label>
-                <input id='density-input' name='density'></input>
+                <input
+                    type='range'
+                    min='0'
+                    max='100'
+                    value= ${window.ModalParameters.density}
+                    class='modal-slider'
+                    id='density-input'
+                    name='density'>
+                </input>
                 <label>Max Size</label>
-                <input id='max-size-input' name='maxSize'></input>
+                <input
+                    type='range'
+                    min='1'
+                    max='300'
+                    value= ${window.ModalParameters.maxSize}
+                    class='modal-slider'
+                    id='max-size-input'
+                    name='maxSize'>
+                </input>
                 <button id='modal-button' type='button'>Generate</button>
             </div>
         </div>
@@ -69,10 +93,10 @@ function closeModal(): void {
 }
 
 function onParameterInput(this: GlobalEventHandlers, event: Event): void {
-    console.log(event);
     const target = (event.target as HTMLInputElement);
     const key = target.name;
     const value = target.value;
+    console.log(key, value);
     window.ModalParameters[key] = parseInt(value); 
 }
 
@@ -88,7 +112,9 @@ function drawBlobs(): void {
     const mainWidth = (main?.clientWidth || 0);
     const mainHeight = (main?.clientHeight || 0);
 
-    for (let i = 0; i < window.ModalParameters["quantity"] && i < 900; i++) {
+    let tryDrawCount = 0;
+    for (let i = 0; i < window.ModalParameters["quantity"] && tryDrawCount < 1000; i++) {
+        tryDrawCount++
         const circlePosition = generateCirclePosition(mainWidth, mainHeight);
         const positionIsAvailable = isCirclePositionAvailable(circlePosition, circlePositions);
         if (positionIsAvailable == false){
@@ -247,11 +273,10 @@ function getRandomCircleColors(): CircleColors {
 function getRandomColor(transparency: number): Color {
     const color: Color = {
         h: Math.floor(Math.random() * (358) + 1),
-        s: Math.floor(Math.random() * (100 - 40 + 1) + 40),
-        l: Math.floor(Math.random() * (70 - 40 + 1) + 40),
+        s: Math.floor(Math.random() * (100 - 30 + 1) + 30),
+        l: Math.floor(Math.random() * (80 - 20 + 1) + 20),
         a: transparency
     }
-
     return color;
 }
 

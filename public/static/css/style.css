@@ -1,4 +1,5 @@
 body {
+    font-family: 'Teko', sans-serif;
     position: relative;
     width: 100vw;
     height: 100vh;
@@ -8,7 +9,14 @@ body {
     background: radial-gradient(hsl(218, 100%, 3%), hsl(218, 100%, 10%));
 }
 
+p {
+    font-size: 1rem;
+}
+
 label {
+    font-size: 1.5rem;
+    font-weight: 400;
+    letter-spacing: .2rem;
     color: aliceblue;
 }
 
@@ -55,8 +63,41 @@ label {
     max-height: 500px;
     min-height: 300px;
     border: 5px solid white;
-    border-radius: 50%;
+    border-radius: 33% 57% 43% 32% / 62% 73% 61% 32%;
 }
+
+.modal-slider {
+    -webkit-appearance: none;
+    width: 50%;
+    min-width: 200px;
+    height: 10px;
+    border-radius: 5px;  
+    background: rgba(0, 102, 255, .90);
+    outline: none;
+    opacity: 0.7;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+    box-shadow: rgba(0, 102, 255, 0.76) 0px 5px, rgba(0, 102, 255,  0.3) 0px 10px, rgba(0, 102, 255,0.2) 0px 15px, rgba(0, 102, 255, 0.1) 0px 20px, rgba(0, 102, 255, 0.05) 0px 25px;
+    margin-bottom: 35px;
+}
+
+.modal-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 10px;
+    height: 10px;
+    border-radius: 33% 57% 43% 32% / 62% 73% 61% 32%; 
+    background: #ffffffbd;
+    cursor: pointer;
+  }
+
+.modal-slider::-moz-range-thumb {
+  width: 25px; /* Set a specific slider handle width */
+  height: 25px; /* Slider handle height */
+  background: #04AA6D; /* Green background */
+  cursor: pointer; /* Cursor on hover */
+}
+
 
 #modal-button {
     border: 5px solid white;
@@ -66,7 +107,8 @@ label {
 
 @keyframes blobpulse {
     from {
-        transform: translate(0px, 0px);
+        transform: translate(0px, 0px) rotate(0deg);
+        transform-origin: 0% 0%;
     }
 
     20% {
@@ -74,7 +116,8 @@ label {
     }
 
     40% {
-        transform: translate(0px, 5px);
+        transform: translate(0px, 5px) rotate(360deg);
+        transform-origin: 30% 40%;
     }
 
     60% {
@@ -86,6 +129,7 @@ label {
     }
 
     to {
-        transform: translate(0px, 0px);
+        transform: translate(0px, 0px) rotate(360deg);
+        transform-origin: 0% 0%;
     }
 }
