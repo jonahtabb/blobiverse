@@ -4,6 +4,7 @@
 *.tsbuildinfo
 # Directories
 dist/
+docs/
 node_modules/
 # Env files
 .env.
