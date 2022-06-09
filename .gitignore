@@ -1,20 +1,17 @@
-/*
-!/dist
-!/dist/*
-
-# # Cache files  
-# .eslintcache
-# .npm
-# *.tsbuildinfo
-# # Directories
-# dist/
-# node_modules/
-# # Env files
-# .env.
-# .env.test
-# # Logs
-# *.log
-# logs
-# npm-debug.log*
-# # Misc files
-# .DS_Store
+# Cache files  
+.eslintcache
+.npm
+*.tsbuildinfo
+# Directories
+dist/
+docs/
+node_modules/
+# Env files
+.env.
+.env.test
+# Logs
+*.log
+logs
+npm-debug.log*
+# Misc files
+.DS_Store
