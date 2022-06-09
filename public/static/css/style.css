@@ -1,5 +1,9 @@
-body {
+:root {
+    --main-color: rgb(196, 206, 253);
     font-family: 'Teko', sans-serif;
+}
+
+body {
     position: relative;
     width: 100vw;
     height: 100vh;
@@ -17,7 +21,7 @@ label {
     font-size: 1.5rem;
     font-weight: 400;
     letter-spacing: .2rem;
-    color: aliceblue;
+    color: var(--main-color);
 }
 
 .main {
@@ -37,6 +41,27 @@ label {
     animation-name: blobpulse;
     animation-iteration-count: infinite;
 }
+
+.modal-background {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: radial-gradient(hsl(218, 100%, 3%), hsl(218, 100%, 10%));
+    /* animation-duration: 10s;
+    animation-name: loading-zoom;
+    animation-iteration-count: infinite; */
+}
+
+/* @keyframes loading-zoom {
+    from {
+        transform: scale(3);
+    }
+    to {
+        transform: scale(8);
+    }
+} */
+
 
 .modal-container {
     position: absolute;
@@ -59,11 +84,11 @@ label {
     width: 50%;
     max-width: 500px;
     min-width: 300px;
-    height: 50%;
-    max-height: 500px;
-    min-height: 300px;
+    /* height: 50%; */
+    z-index: 100;
+    /* min-height: 300px;
     border: 5px solid white;
-    border-radius: 33% 57% 43% 32% / 62% 73% 61% 32%;
+    border-radius: 33% 57% 43% 32% / 62% 73% 61% 32%; */
 }
 
 .modal-slider {
@@ -81,13 +106,17 @@ label {
     margin-bottom: 35px;
 }
 
+.modal-slider.reverse-display {
+    direction: rtl;
+}
+
 .modal-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 10px;
-    height: 10px;
+    width: 20px;
+    height: 20px;
     border-radius: 33% 57% 43% 32% / 62% 73% 61% 32%; 
-    background: #ffffffbd;
+    background: var(--main-color);
     cursor: pointer;
   }
 
@@ -100,15 +129,23 @@ label {
 
 
 #modal-button {
-    border: 5px solid white;
-    border-radius: 50%;
+    font-family: 'Teko', sans-serif;
+    height: 50px;
+    width: 50px;
+    background-color: var(--main-color);
+    border-radius: 70% 30% 30% 70% / 60% 40% 48% 45%;
     cursor: pointer;
+    z-index: inherit;
+    /* transition-duration: 10s; */
 }
+
+/* #modal-button:hover {
+    transform: scale(1.5);
+} */
 
 @keyframes blobpulse {
     from {
-        transform: translate(0px, 0px) rotate(0deg);
-        transform-origin: 0% 0%;
+        transform: translate(0px, 0px);
     }
 
     20% {
@@ -116,8 +153,7 @@ label {
     }
 
     40% {
-        transform: translate(0px, 5px) rotate(360deg);
-        transform-origin: 30% 40%;
+        transform: translate(0px, 5px);
     }
 
     60% {
@@ -129,7 +165,6 @@ label {
     }
 
     to {
-        transform: translate(0px, 0px) rotate(360deg);
-        transform-origin: 0% 0%;
+        transform: translate(0px, 0px);
     }
 }

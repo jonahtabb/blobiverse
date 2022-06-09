@@ -8,25 +8,17 @@ declare global {
     interface Window { ModalParameters: ModalParameters }
 }
 
-
-// controllable parameters:
-// density
-// max size
-// glow brightness
-
-//drawBlobs();
-
-
-
 function drawStartModal(): void {
     window.ModalParameters = {
         "quantity": 100,
         "density": 20,
         "maxSize": 100,
+        "speed": 20
     };
     const main = document.getElementsByClassName('main')[0];
     const modalBaseHTML = `
         <div class='modal-container'>
+            <div class='modal-background'></div>
             <div class='modal'>
                 <label>Quantity</label>
                 <input
@@ -44,7 +36,7 @@ function drawStartModal(): void {
                     min='0'
                     max='100'
                     value= ${window.ModalParameters.density}
-                    class='modal-slider'
+                    class='modal-slider reverse-display'
                     id='density-input'
                     name='density'>
                 </input>
@@ -58,7 +50,17 @@ function drawStartModal(): void {
                     id='max-size-input'
                     name='maxSize'>
                 </input>
-                <button id='modal-button' type='button'>Generate</button>
+                <label>Speed</label>
+                <input
+                    type='range'
+                    min='5'
+                    max='60'
+                    value= ${window.ModalParameters.speed}
+                    class='modal-slider reverse-display'
+                    id='speed-input'
+                    name='speed'>
+                </input>
+                <button id='modal-button' type='button'></button>
             </div>
         </div>
     `
@@ -83,6 +85,11 @@ function drawStartModal(): void {
     const maxSizeInput = document.getElementById('max-size-input') as HTMLInputElement;
     if (maxSizeInput) {
         maxSizeInput.oninput = onParameterInput;
+    }
+
+    const speedInput = document.getElementById('speed-input') as HTMLInputElement;
+    if (speedInput) {
+        speedInput.oninput = onParameterInput;
     }
 }
 
@@ -124,8 +131,8 @@ function drawBlobs(): void {
         const circle: Circle = createCircle(circlePosition);
         circlePositions.push(circle.position);
         setTimeout(() => {
-            circle.htmlElement.style.transition = "opacity 20s";
-            circle.htmlElement.style.transition = "transform 20s";
+            circle.htmlElement.style.transition = `opacity ${window.ModalParameters["speed"]}s`;
+            circle.htmlElement.style.transition = `transform ${window.ModalParameters["speed"]}s`;
             circle.htmlElement.style.transitionTimingFunction = "ease-in-out";
             circle.htmlElement.style.transform = "scale(0) rotate(20deg)";
             circle.htmlElement.style.opacity = ".2";
