@@ -18,7 +18,7 @@
     "checkJs": true,
     // Everything below are custom changes for this app
     "allowJs": true,
-    "outDir": "dist"
+    "outDir": "docs"
   },
   "include": [
     "./src/**/*"
