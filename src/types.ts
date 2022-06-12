@@ -1,20 +1,20 @@
 declare global {
-    interface Window { ModalParameters: ModalParameters, BlobAudioContext: AudioContext }
+    interface Window { ModalParameters: ModalParameters, BlobAudioContext: AudioContext, IsModalOpen: boolean }
 }
 
 export type ModalParameters = {
     [key: string]: number,
 }
 
-export type Circle = {
+export type Blob = {
     htmlContainer: HTMLElement,
     htmlElement: HTMLElement,
-    position: CirclePosition,
-    shape: CircleShape,
-    colors: CircleColors
+    position: BlobPosition,
+    shape: BlobShape,
+    colors: BlobColors
 }
 
-export type CirclePosition = {
+export type BlobPosition = {
     yTop: number,
     yBottom: number,
     xLeft: number,
@@ -30,7 +30,7 @@ export type CenterPoint = {
     yCenter: number
 }
 
-export type CirclePositions = CirclePosition[]
+export type BlobPositions = BlobPosition[]
 
 export type RandomOffset = {
     xOffset: number,
@@ -42,7 +42,7 @@ export type RandomSize = {
     height: number
 }
 
-export type CircleShape = {
+export type BlobShape = {
     1: number,
     2: number,
     3: number,
@@ -51,23 +51,34 @@ export type CircleShape = {
     6: number,
     7: number,
     8: number,
+    borderRadiusString: string
 }
 
-export type CircleColors = {
+export type BlobColors = {
     color1: Color,
     color2: Color,
     backgroundColor: string,
     backgroundImage: string, 
+    boxShadow1: string,
+    boxShadow2: string,
 }
 
 export type Color = {
     h: number,
     s: number,
     l: number,
-    a: number
+    a: number,
+    hslaString: string
 }
 
 export type AudioContextType = "sine" | "square" | "triangle";
 export type AudioContextTypesLookup = {
     [key: number]: AudioContextType
+}
+export type GenerateSoundParameters = {
+    audioContext: AudioContext,
+    frequency: number,
+    contextType: AudioContextType,
+    duration: number,
+    gain: number,
 }

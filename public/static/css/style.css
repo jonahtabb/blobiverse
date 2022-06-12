@@ -1,6 +1,7 @@
 :root {
-    --main-color: rgb(207, 255, 15);
+    --main-color: rgb(223, 229, 255);
     font-family: 'Teko', sans-serif;
+    color: var(--main-color);
 }
 
 body {
@@ -10,7 +11,7 @@ body {
     overflow: hidden;
     padding: 0 0 0 0;
     margin: 0 0 0 0;
-    background: radial-gradient(hsl(218, 100%, 3%), hsl(218, 100%, 10%));
+    background: radial-gradient(hsl(218, 100%, 3%), hsl(218, 100%, 14%));
 }
 
 p {
@@ -34,6 +35,7 @@ label {
 .blob-1 {
     position: fixed;
     border-radius: 70% 30% 30% 70% / 60% 40% 48% 45%;
+    cursor: pointer;
 }
 
 .blob-container-1 {
@@ -112,25 +114,31 @@ label {
 .modal-slider::-moz-range-thumb {
   width: 25px; /* Set a specific slider handle width */
   height: 25px; /* Slider handle height */
-  background: #04AA6D; /* Green background */
+  background: var(--main-color); /* Green background */
   cursor: pointer; /* Cursor on hover */
 }
 
-
 #modal-button {
+    opacity: 0;
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, 0);
+    bottom: 40px;
     font-family: 'Teko', sans-serif;
     height: 50px;
     width: 50px;
-    background-color: var(--main-color);
+    background-color: hsla(0, 100%, 98%, .15);
     border-radius: 70% 30% 30% 70% / 60% 40% 48% 45%;
+    border-color: transparent;
+    box-shadow: 0 0 20px 15px hsla(0, 100%, 98%, .15), 0 0 25px 20px hsla(0, 100%, 98%, .15), 0 0 40px 30px hsla(0, 100%, 98%, .15);
     cursor: pointer;
-    z-index: inherit;
-    /* transition-duration: 10s; */
+    z-index: 200;
+    transition: all .5s ease-in-out;
 }
 
-/* #modal-button:hover {
-    transform: scale(1.5);
-} */
+#modal-button:hover {
+    transform: scale(1.1) translate(-50%, 0);
+}
 
 @keyframes blobpulse {
     from {
