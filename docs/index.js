@@ -319,10 +319,9 @@ function generateSound(params) {
 function getRandomAudioContextType() {
     var types = {
         1: "sine",
-        2: "square",
-        3: "triangle"
+        2: "triangle"
     };
-    var randomTypeKey = getRandomInt(1, 3);
+    var randomTypeKey = getRandomInt(1, 2);
     console.log("ri", randomTypeKey);
     return types[randomTypeKey];
 }

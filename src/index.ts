@@ -423,10 +423,9 @@ function generateSound(params: GenerateSoundParameters) {
 function getRandomAudioContextType(): AudioContextType {
     const types: AudioContextTypesLookup = {
         1: "sine",
-        2: "square",
-        3: "triangle"
+        2: "triangle"
     }
-    const randomTypeKey = getRandomInt(1, 3);
+    const randomTypeKey = getRandomInt(1, 2);
     console.log("ri", randomTypeKey);
     return types[randomTypeKey];
 }

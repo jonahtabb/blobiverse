@@ -71,7 +71,7 @@ export type Color = {
     hslaString: string
 }
 
-export type AudioContextType = "sine" | "square" | "triangle";
+export type AudioContextType = "sine" | "triangle";
 export type AudioContextTypesLookup = {
     [key: number]: AudioContextType
 }
