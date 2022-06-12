@@ -2,11 +2,7 @@ import type {CenterPoint,
     Circle,
     Color,
     CircleColors,
-    CirclePosition, CirclePositions, CircleShape, RandomOffset, RandomSize, ModalParameters} from './types';
-
-declare global {
-    interface Window { ModalParameters: ModalParameters }
-}
+    CirclePosition, CirclePositions, CircleShape, RandomOffset, RandomSize, ModalParameters, AudioContextType, AudioContextTypesLookup} from './types';
 
 function drawStartModal(): void {
     window.ModalParameters = {
@@ -66,8 +62,13 @@ function drawStartModal(): void {
     `
     if (!main) return;
     main.innerHTML = modalBaseHTML;
-    const modalButton = document.getElementById('modal-button');
 
+    const modalContainer = document.getElementsByClassName('modal-container')[0] as HTMLInputElement;
+    if (modalContainer) {
+        setTimeout(() => {modalContainer.style.opacity = "1"}, 100)
+    }
+
+    const modalButton = document.getElementById('modal-button');
     if (modalButton) {
         modalButton.onclick = onClickGenerateBtn; 
     }
@@ -214,11 +215,33 @@ function createCircle(circlePosition: CirclePosition): Circle {
     circleElement.style.backgroundImage = circleColors.backgroundImage;
     const boxShadowColor1 = colorToHslaString(circleColors.color1, .20);
     const boxShadowColor2 = colorToHslaString(circleColors.color2, .20);
+
     circleElement.style.boxShadow = 
         `0 0 30px 10px hsla(0, 100%, 98%, .25),
         0 0 60px 20px ${boxShadowColor1},
         0 0 90px 30px ${boxShadowColor2}`;
 
+        
+        circleElement.addEventListener("click", (e) => {
+        circleElement.style.transition = "all .2s ease-in-out";
+        circleElement.style.boxShadow = 
+        `0 0 35px 15px hsla(0, 100%, 98%, .5),
+        0 0 65px 25px ${boxShadowColor1},
+        0 0 95px 35px ${boxShadowColor2}`;
+
+        circleElement.style.transform = "scale(1.1) rotate(120deg)";
+        setTimeout(() => {
+            circleElement.style.transform = "scale(1) rotate(120deg)";
+            circleElement.style.boxShadow = 
+            `0 0 30px 10px hsla(0, 100%, 98%, .25),
+            0 0 60px 20px ${boxShadowColor1},
+            0 0 90px 30px ${boxShadowColor2}`
+
+        }, .2 * 1000);
+    })
+
+    const circleOnClickEvent = generateAudioClickEvent(circlePosition.width, window.ModalParameters["maxSize"]);
+    circleElement.addEventListener("click", circleOnClickEvent)
     const circle: Circle = {
         htmlContainer: blobContainer,
         htmlElement: circleElement,
@@ -279,9 +302,9 @@ function getRandomCircleColors(): CircleColors {
 
 function getRandomColor(transparency: number): Color {
     const color: Color = {
-        h: Math.floor(Math.random() * (358) + 1),
-        s: Math.floor(Math.random() * (100 - 30 + 1) + 30),
-        l: Math.floor(Math.random() * (80 - 20 + 1) + 20),
+        h: getRandomInt(1, 358),
+        s: getRandomInt(30, 100),
+        l: getRandomInt(20, 80),
         a: transparency
     }
     return color;
@@ -292,11 +315,95 @@ function colorToHslaString(color: Color, transparency: number): string {
 }
 
 function getRandomDegrees(): number {
-    return Math.floor(Math.random() * (180))
+    return Math.floor(Math.random() * (360))
 }
 
 function createLinearGradient(color1: string, color2: string, degrees: number): string {
     return `linear-gradient(${degrees}deg, ${color1} 0%, ${color2} 100%)`
+}
+
+function getRandomInt(min: number, max: number): number {
+    return Math.floor(Math.random() * (max - min + 1) + min);
+}
+
+function getRandomDecimal(min: number, max: number): number {
+    return Math.random() * (max - min + 1) + min;
+}
+
+function generateSound(context: AudioContext, frequency: number, type: AudioContextType, length: number) {
+
+    let o = context.createOscillator()
+    let g = context.createGain()
+    o.type = type
+    o.connect(g)
+    o.frequency.value = frequency
+    g.gain.value = .01
+    g.connect(context.destination)
+    o.start(0)
+  
+    g.gain.exponentialRampToValueAtTime(
+      0.00001, context.currentTime + length
+    )
+}
+
+function getRandomAudioContextType(): AudioContextType {
+    const types: AudioContextTypesLookup = {
+        1: "sine",
+        2: "square",
+        3: "triangle"
+    }
+    const randomTypeKey = getRandomInt(1,3);
+    console.log("ri", randomTypeKey);
+    return types[randomTypeKey];
+}
+
+function generateAudioClickEvent(blobWidth: number, blobMaxWidth: number): (event: Event) => void {
+    const widthAsPercentOfMax = blobWidth / blobMaxWidth;
+
+    const maxFrequency = 800 - (blobWidth * 2)
+
+    const randomFrequency1 = getRandomDecimal(100, maxFrequency);
+    const randomFrequency2 = getRandomDecimal(100, maxFrequency);
+    const randomFrequency3 = getRandomDecimal(100, maxFrequency);
+    const randomFrequency4 = getRandomDecimal(100, maxFrequency);
+
+    const contextType = getRandomAudioContextType();
+    const contextType2 = getRandomAudioContextType();
+    const length = getRandomDecimal(1, 8 * widthAsPercentOfMax);
+
+    const randomDelay1 = getRandomInt(1, 1);
+    const randomDelay2 = getRandomInt(1, 1);
+    const randomDelay3 = getRandomInt(1, 1);
+    const randomDelay4 = getRandomInt(1, 1);
+
+    function startButtonOnClick(event: Event) {
+        event.preventDefault()
+
+        if (!window.BlobAudioContext){
+            window.BlobAudioContext = new AudioContext();
+        }
+
+        let width = blobWidth;
+        console.log(blobWidth);
+        setTimeout(()=>{
+            console.log(randomFrequency1);
+          generateSound(window.BlobAudioContext, randomFrequency1, contextType, length)
+        }, randomDelay1)
+    
+        // setTimeout(()=>{
+        //   generateSound(window.BlobAudioContext, randomFrequency2, contextType2, length)
+        // }, randomDelay1)
+    
+        // setTimeout(()=>{
+        //   generateSound(window.BlobAudioContext, randomFrequency3, "sine")
+        // }, randomDelay3)
+
+        // setTimeout(()=>{
+        //     generateSound(window.BlobAudioContext, randomFrequency4, "sine")
+        //   }, randomDelay4)
+      }
+
+    return startButtonOnClick;
 }
 
 drawStartModal();

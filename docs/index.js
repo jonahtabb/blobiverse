@@ -21,6 +21,10 @@ function drawStartModal() {
     if (!main)
         return;
     main.innerHTML = modalBaseHTML;
+    var modalContainer = document.getElementsByClassName('modal-container')[0];
+    if (modalContainer) {
+        setTimeout(function () { modalContainer.style.opacity = "1"; }, 100);
+    }
     var modalButton = document.getElementById('modal-button');
     if (modalButton) {
         modalButton.onclick = onClickGenerateBtn;
@@ -162,6 +166,19 @@ function createCircle(circlePosition) {
     var boxShadowColor2 = colorToHslaString(circleColors.color2, .20);
     circleElement.style.boxShadow =
         "0 0 30px 10px hsla(0, 100%, 98%, .25),\n        0 0 60px 20px ".concat(boxShadowColor1, ",\n        0 0 90px 30px ").concat(boxShadowColor2);
+    circleElement.addEventListener("click", function (e) {
+        circleElement.style.transition = "all .2s ease-in-out";
+        circleElement.style.boxShadow =
+            "0 0 35px 15px hsla(0, 100%, 98%, .5),\n        0 0 65px 25px ".concat(boxShadowColor1, ",\n        0 0 95px 35px ").concat(boxShadowColor2);
+        circleElement.style.transform = "scale(1.1) rotate(120deg)";
+        setTimeout(function () {
+            circleElement.style.transform = "scale(1) rotate(120deg)";
+            circleElement.style.boxShadow =
+                "0 0 30px 10px hsla(0, 100%, 98%, .25),\n            0 0 60px 20px ".concat(boxShadowColor1, ",\n            0 0 90px 30px ").concat(boxShadowColor2);
+        }, .2 * 1000);
+    });
+    var circleOnClickEvent = generateAudioClickEvent(circlePosition.width, window.ModalParameters["maxSize"]);
+    circleElement.addEventListener("click", circleOnClickEvent);
     var circle = {
         htmlContainer: blobContainer,
         htmlElement: circleElement,
@@ -213,9 +230,9 @@ function getRandomCircleColors() {
 }
 function getRandomColor(transparency) {
     var color = {
-        h: Math.floor(Math.random() * (358) + 1),
-        s: Math.floor(Math.random() * (100 - 30 + 1) + 30),
-        l: Math.floor(Math.random() * (80 - 20 + 1) + 20),
+        h: getRandomInt(1, 358),
+        s: getRandomInt(30, 100),
+        l: getRandomInt(20, 80),
         a: transparency
     };
     return color;
@@ -224,10 +241,74 @@ function colorToHslaString(color, transparency) {
     return "hsla(".concat(color.h, ", ").concat(color.s, "%, ").concat(color.l, "%, ").concat(transparency, ")");
 }
 function getRandomDegrees() {
-    return Math.floor(Math.random() * (180));
+    return Math.floor(Math.random() * (360));
 }
 function createLinearGradient(color1, color2, degrees) {
     return "linear-gradient(".concat(degrees, "deg, ").concat(color1, " 0%, ").concat(color2, " 100%)");
+}
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1) + min);
+}
+function getRandomDecimal(min, max) {
+    return Math.random() * (max - min + 1) + min;
+}
+function generateSound(context, frequency, type, length) {
+    var o = context.createOscillator();
+    var g = context.createGain();
+    o.type = type;
+    o.connect(g);
+    o.frequency.value = frequency;
+    g.gain.value = .01;
+    g.connect(context.destination);
+    o.start(0);
+    g.gain.exponentialRampToValueAtTime(0.00001, context.currentTime + length);
+}
+function getRandomAudioContextType() {
+    var types = {
+        1: "sine",
+        2: "square",
+        3: "triangle"
+    };
+    var randomTypeKey = getRandomInt(1, 3);
+    console.log("ri", randomTypeKey);
+    return types[randomTypeKey];
+}
+function generateAudioClickEvent(blobWidth, blobMaxWidth) {
+    var widthAsPercentOfMax = blobWidth / blobMaxWidth;
+    var maxFrequency = 800 - (blobWidth * 2);
+    var randomFrequency1 = getRandomDecimal(100, maxFrequency);
+    var randomFrequency2 = getRandomDecimal(100, maxFrequency);
+    var randomFrequency3 = getRandomDecimal(100, maxFrequency);
+    var randomFrequency4 = getRandomDecimal(100, maxFrequency);
+    var contextType = getRandomAudioContextType();
+    var contextType2 = getRandomAudioContextType();
+    var length = getRandomDecimal(1, 8 * widthAsPercentOfMax);
+    var randomDelay1 = getRandomInt(1, 1);
+    var randomDelay2 = getRandomInt(1, 1);
+    var randomDelay3 = getRandomInt(1, 1);
+    var randomDelay4 = getRandomInt(1, 1);
+    function startButtonOnClick(event) {
+        event.preventDefault();
+        if (!window.BlobAudioContext) {
+            window.BlobAudioContext = new AudioContext();
+        }
+        var width = blobWidth;
+        console.log(blobWidth);
+        setTimeout(function () {
+            console.log(randomFrequency1);
+            generateSound(window.BlobAudioContext, randomFrequency1, contextType, length);
+        }, randomDelay1);
+        // setTimeout(()=>{
+        //   generateSound(window.BlobAudioContext, randomFrequency2, contextType2, length)
+        // }, randomDelay1)
+        // setTimeout(()=>{
+        //   generateSound(window.BlobAudioContext, randomFrequency3, "sine")
+        // }, randomDelay3)
+        // setTimeout(()=>{
+        //     generateSound(window.BlobAudioContext, randomFrequency4, "sine")
+        //   }, randomDelay4)
+    }
+    return startButtonOnClick;
 }
 drawStartModal();
 export {};

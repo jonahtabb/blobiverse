@@ -1,3 +1,7 @@
+declare global {
+    interface Window { ModalParameters: ModalParameters, BlobAudioContext: AudioContext }
+}
+
 export type ModalParameters = {
     [key: string]: number,
 }
@@ -61,4 +65,9 @@ export type Color = {
     s: number,
     l: number,
     a: number
+}
+
+export type AudioContextType = "sine" | "square" | "triangle";
+export type AudioContextTypesLookup = {
+    [key: number]: AudioContextType
 }
