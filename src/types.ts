@@ -1,9 +1,31 @@
 declare global {
-    interface Window { ModalParameters: ModalParameters, BlobAudioContext: AudioContext, IsModalOpen: boolean }
+    interface Window {
+        BlobiverseContext: {
+            ModalParameters: ModalParameters,
+            ModalParameterRanges: ModalParametersRanges,
+            BlobAudioContext: AudioContext | null,
+            IsModalOpen: boolean,
+            CancelBlobDraws: CancelBlobDraw[]
+        }
+    }
 }
+
+export type CancelBlobDraw = () => void
 
 export type ModalParameters = {
     [key: string]: number,
+}
+
+export type ModalParametersRanges = {
+    quantity: ParameterMinMax,
+    density: ParameterMinMax,
+    maxSize: ParameterMinMax,
+    speed: ParameterMinMax
+}
+
+export type ParameterMinMax = {
+    min: number,
+    max: number
 }
 
 export type Blob = {

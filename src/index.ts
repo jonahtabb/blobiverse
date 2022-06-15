@@ -5,16 +5,39 @@ import type {
     BlobColors,
     BlobPosition,
     BlobPositions,
-    BlobShape, RandomOffset, RandomSize, ModalParameters, AudioContextType, AudioContextTypesLookup, GenerateSoundParameters
+    BlobShape, RandomOffset, RandomSize, ModalParameters, AudioContextType, AudioContextTypesLookup, GenerateSoundParameters, CancelBlobDraw
 } from './types';
 
 function drawStartModal(): void {
-    window.ModalParameters = {
-        "quantity": 100,
-        "density": 20,
-        "maxSize": 100,
-        "speed": 20
-    };
+
+    let maxQuantity = 300;
+    let maxMaxSize = 300;
+    let maxDensity = 100;
+    let maxSpeed = 60;
+
+    if (window.outerWidth < 800) {
+        maxQuantity = maxQuantity * (window.outerWidth / 6000);
+        maxMaxSize = maxMaxSize * (window.outerWidth / 1000);
+    }
+
+    window.BlobiverseContext = {
+        ModalParameters: {
+            "quantity": Math.floor(maxQuantity / 2),
+            "density": Math.floor(maxDensity / 2.5),
+            "maxSize": Math.floor(maxMaxSize / 2),
+            "speed": Math.floor(maxSpeed / 2.5)
+        },
+        ModalParameterRanges: {
+            quantity: { min: 1, max: maxQuantity },
+            density: { min: 0, max: maxDensity },
+            maxSize: { min: 1, max: maxMaxSize },
+            speed: { min: 5, max: maxSpeed }
+        },
+        BlobAudioContext: null,
+        IsModalOpen: false,
+        CancelBlobDraws: new Array<CancelBlobDraw>()
+    }
+
     const main = document.getElementsByClassName('main')[0];
     const modalBaseHTML = `
         <div class='modal-container'>
@@ -24,9 +47,9 @@ function drawStartModal(): void {
                 <label>Quantity</label>
                 <input
                     type='range'
-                    min='1'
-                    max='300'
-                    value= ${window.ModalParameters.quantity}
+                    min= '${window.BlobiverseContext.ModalParameterRanges.quantity.min}'
+                    max= '${window.BlobiverseContext.ModalParameterRanges.quantity.max}'
+                    value= '${window.BlobiverseContext.ModalParameters.quantity}'
                     class='modal-slider'
                     id='quantity-input'
                     name='quantity'>
@@ -34,9 +57,9 @@ function drawStartModal(): void {
                 <label>Density</label>
                 <input
                     type='range'
-                    min='0'
-                    max='100'
-                    value= ${window.ModalParameters.density}
+                    min= '${window.BlobiverseContext.ModalParameterRanges.density.min}'
+                    max= '${window.BlobiverseContext.ModalParameterRanges.density.max}'
+                    value= '${window.BlobiverseContext.ModalParameters.density}'
                     class='modal-slider reverse-display'
                     id='density-input'
                     name='density'>
@@ -44,19 +67,19 @@ function drawStartModal(): void {
                 <label>Max Size</label>
                 <input
                     type='range'
-                    min='1'
-                    max='300'
-                    value= ${window.ModalParameters.maxSize}
-                    class='modal-slider'
-                    id='max-size-input'
-                    name='maxSize'>
+                    min= '${window.BlobiverseContext.ModalParameterRanges.maxSize.min}'
+                    max= '${window.BlobiverseContext.ModalParameterRanges.maxSize.max}'
+                    value= '${window.BlobiverseContext.ModalParameters.maxSize}'
+                    class= 'modal-slider'
+                    id= 'max-size-input'
+                    name= 'maxSize'>
                 </input>
                 <label>Speed</label>
                 <input
                     type='range'
-                    min='5'
-                    max='60'
-                    value= ${window.ModalParameters.speed}
+                    min='${window.BlobiverseContext.ModalParameterRanges.speed.min}'
+                    max='${window.BlobiverseContext.ModalParameterRanges.speed.max}'
+                    value= '${window.BlobiverseContext.ModalParameters.speed}'
                     class='modal-slider reverse-display'
                     id='speed-input'
                     name='speed'>
@@ -66,7 +89,7 @@ function drawStartModal(): void {
     `
     if (!main) return;
     main.innerHTML = modalBaseHTML;
-    window.IsModalOpen = true;
+    window.BlobiverseContext.IsModalOpen = true;
 
     const generateButton = document.createElement('button');
     generateButton.id = 'modal-button';
@@ -109,14 +132,14 @@ function drawStartModal(): void {
 function closeModal(): void {
     const modalContainer = document.getElementsByClassName('modal-container')[0];
     if (!modalContainer) return;
-    window.IsModalOpen = false;
+    window.BlobiverseContext.IsModalOpen = false;
     modalContainer.classList.add('hide');
 }
 
 function openModal(): void {
     const modalContainer = document.getElementsByClassName('modal-container')[0];
     if (!modalContainer) return;
-    window.IsModalOpen = true;
+    window.BlobiverseContext.IsModalOpen = true;
     modalContainer.classList.remove('hide');
 }
 
@@ -124,12 +147,12 @@ function onParameterInput(this: GlobalEventHandlers, event: Event): void {
     const target = (event.target as HTMLInputElement);
     const key = target.name;
     const value = target.value;
-    console.log(key, value);
-    window.ModalParameters[key] = parseInt(value);
+    console.log(key, value)
+    window.BlobiverseContext.ModalParameters[key] = parseInt(value);
 }
 
 function onClickGenerateBtn(): void {
-    const IsModalOpen = window.IsModalOpen;
+    const IsModalOpen = window.BlobiverseContext.IsModalOpen;
     if (IsModalOpen){
         closeModal();
         drawBlobs();
@@ -147,7 +170,7 @@ function drawBlobs(): void {
     const mainHeight = (main?.clientHeight || 0);
 
     let tryDrawCount = 0;
-    for (let i = 0; i < window.ModalParameters["quantity"] && tryDrawCount < 1000; i++) {
+    for (let i = 0; i < window.BlobiverseContext.ModalParameters["quantity"] && tryDrawCount < 1000; i++) {
         tryDrawCount++
         const blobPosition = generateBlobPosition(mainWidth, mainHeight);
         const positionIsAvailable = isBlobPositionAvailable(blobPosition, blobPositions);
@@ -159,19 +182,26 @@ function drawBlobs(): void {
         blobPositions.push(blob.position);
         insertBlob(main, blob, i)
     }
-    console.log(blobPositions)
 }
 
 function clearBlobs(): void {
+    // clearTimeout for blobs that are not yet on the dom
+    window.BlobiverseContext.CancelBlobDraws.forEach(cancelBlobDraw => {
+        cancelBlobDraw()
+    })
+    // remove blobs that are already on the dom
     const blobs = document.getElementsByClassName('blob-container-1');
     let blobsArray: Element[] = Array.from(blobs);
-    blobsArray.forEach((element) => element.remove())
+    blobsArray.forEach((element) => {
+        element.remove()
+    })
 }
 
 function insertBlob(parentElement: HTMLElement, blob: Blob, blobIndex: number) {
-    setTimeout(() => {
-        blob.htmlElement.style.transition = `opacity ${window.ModalParameters["speed"]}s`;
-        blob.htmlElement.style.transition = `transform ${window.ModalParameters["speed"]}s`;
+    let timeoutId = setTimeout(() => {
+        
+        blob.htmlElement.style.transition = `opacity ${window.BlobiverseContext.ModalParameters["speed"]}s`;
+        blob.htmlElement.style.transition = `transform ${window.BlobiverseContext.ModalParameters["speed"]}s`;
         blob.htmlElement.style.transitionTimingFunction = "ease-in-out";
         blob.htmlElement.style.transform = "scale(0) rotate(20deg)";
         blob.htmlElement.style.opacity = ".2";
@@ -185,6 +215,11 @@ function insertBlob(parentElement: HTMLElement, blob: Blob, blobIndex: number) {
 
     }, 100 * blobIndex)
 
+    const cancelBlobDraw = function() {clearTimeout(timeoutId)}
+    window.BlobiverseContext.CancelBlobDraws.push(
+        cancelBlobDraw
+    )
+
     const blobElement = blob.htmlElement;
 
     blobElement.addEventListener("click", (event: Event) => {
@@ -194,7 +229,6 @@ function insertBlob(parentElement: HTMLElement, blob: Blob, blobIndex: number) {
         if (event.target instanceof HTMLElement) {
             currentWidth = event.target.clientWidth;
         }
-        console.dir(event.target)
         const currentScale = currentWidth / blob.position.width
         const clickScale = currentScale * 1.1;
 
@@ -207,12 +241,11 @@ function insertBlob(parentElement: HTMLElement, blob: Blob, blobIndex: number) {
         blobElement.style.transform = `scale(${clickScale}) rotate(120deg)`;
 
         setTimeout(() => {
-            const widthAsPercentOfMax = blob.position.width / window.ModalParameters["maxSize"];
+            const widthAsPercentOfMax = blob.position.width / window.BlobiverseContext.ModalParameters["maxSize"];
             let duration =  Math.floor(5 * widthAsPercentOfMax);
             if (duration < 2){
                 duration = 2;
             }
-            console.log(duration);
             blobElement.style.transition = `all ${duration}s ease-out`;
             blobElement.style.transform = `scale(${currentScale}) rotate(120deg)`;
             blobElement.style.boxShadow =
@@ -223,7 +256,7 @@ function insertBlob(parentElement: HTMLElement, blob: Blob, blobIndex: number) {
         }, .2 * 1000);
     })
 
-    const blobOnClickEvent = generateAudioClickEvent(blob.position.width, window.ModalParameters["maxSize"]);
+    const blobOnClickEvent = generateAudioClickEvent(blob.position.width, window.BlobiverseContext.ModalParameters["maxSize"]);
     blobElement.addEventListener("click", blobOnClickEvent)
 
 }
@@ -253,7 +286,7 @@ function generateBlobPosition(containerWidth: number, containerHeight: number): 
 
 function isBlobPositionAvailable(newPosition: BlobPosition, blobPositions: BlobPositions): boolean {
     for (const blob of blobPositions) {
-        const centerDistance = getDistance(newPosition.center, blob.center) - window.ModalParameters["density"];
+        const centerDistance = getDistance(newPosition.center, blob.center) - window.BlobiverseContext.ModalParameters["density"];
         const radiusA = newPosition.radius;
         const radiusB = blob.radius;
         const radiiSumSquared = (radiusA + radiusB) ^ 2;
@@ -328,7 +361,7 @@ function getRandomShape(): BlobShape {
 }
 
 function getRandomSize(): RandomSize {
-    const randomSize = Math.random() * window.ModalParameters["maxSize"];
+    const randomSize = Math.random() * window.BlobiverseContext.ModalParameters["maxSize"];
     return { width: randomSize, height: randomSize }
 }
 
@@ -426,7 +459,6 @@ function getRandomAudioContextType(): AudioContextType {
         2: "triangle"
     }
     const randomTypeKey = getRandomInt(1, 2);
-    console.log("ri", randomTypeKey);
     return types[randomTypeKey];
 }
 
@@ -442,8 +474,8 @@ function generateAudioClickEvent(blobWidth: number, blobMaxWidth: number): (even
     function startButtonOnClick(event: Event) {
         event.preventDefault()
 
-        if (!window.BlobAudioContext) {
-            window.BlobAudioContext = new AudioContext();
+        if (!window.BlobiverseContext.BlobAudioContext) {
+            window.BlobiverseContext.BlobAudioContext = new AudioContext();
         }
 
         let gain = widthAsPercentOfMax * .0073;
@@ -456,14 +488,12 @@ function generateAudioClickEvent(blobWidth: number, blobMaxWidth: number): (even
         }
 
         const GenerateSoundParameters = {
-            audioContext: window.BlobAudioContext,
+            audioContext: window.BlobiverseContext.BlobAudioContext,
             frequency: frequency,
             contextType: contextType,
             duration: duration,
             gain: gain
         }
-        console.log(GenerateSoundParameters);
-
         generateSound(GenerateSoundParameters)
     }
 
