@@ -10,7 +10,7 @@ import type {
 
 function drawStartModal(): void {
 
-    let maxQuantity = 300;
+    let maxQuantity = 200;
     let maxMaxSize = 300;
     let maxDensity = 100;
     let maxSpeed = 60;
@@ -478,7 +478,7 @@ function generateAudioClickEvent(blobWidth: number, blobMaxWidth: number): (even
             window.BlobiverseContext.BlobAudioContext = new AudioContext();
         }
 
-        let gain = widthAsPercentOfMax * .0073;
+        let gain = widthAsPercentOfMax * .008;
         if (gain < .0025) {
             gain = .0025
         }

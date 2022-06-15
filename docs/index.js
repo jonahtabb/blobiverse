@@ -10,7 +10,7 @@ var __assign = (this && this.__assign) || function () {
     return __assign.apply(this, arguments);
 };
 function drawStartModal() {
-    var maxQuantity = 300;
+    var maxQuantity = 200;
     var maxMaxSize = 300;
     var maxDensity = 100;
     var maxSpeed = 60;
@@ -360,7 +360,7 @@ function generateAudioClickEvent(blobWidth, blobMaxWidth) {
         if (!window.BlobiverseContext.BlobAudioContext) {
             window.BlobiverseContext.BlobAudioContext = new AudioContext();
         }
-        var gain = widthAsPercentOfMax * .0073;
+        var gain = widthAsPercentOfMax * .008;
         if (gain < .0025) {
             gain = .0025;
         }
