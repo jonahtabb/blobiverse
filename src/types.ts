@@ -3,7 +3,10 @@ declare global {
         BlobiverseContext: {
             ModalParameters: ModalParameters,
             ModalParameterRanges: ModalParametersRanges,
+            Volume: number,
+            VolumeRange: ParameterMinMax,
             BlobAudioContext: AudioContext | null,
+            NotesAsFrequencies: NotesAsFrequencies,
             IsModalOpen: boolean,
             CancelBlobDraws: CancelBlobDraw[]
         }
@@ -26,6 +29,10 @@ export type ModalParametersRanges = {
 export type ParameterMinMax = {
     min: number,
     max: number
+}
+
+export type NotesAsFrequencies = {
+    [key: string] : number[]
 }
 
 export type Blob = {
@@ -102,5 +109,5 @@ export type GenerateSoundParameters = {
     frequency: number,
     contextType: AudioContextType,
     duration: number,
-    gain: number,
+    baseGainMultiplier: number,
 }

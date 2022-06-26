@@ -8,9 +8,44 @@ import type {
     BlobShape, RandomOffset, RandomSize, ModalParameters, AudioContextType, AudioContextTypesLookup, GenerateSoundParameters, CancelBlobDraw
 } from './types';
 
-function drawStartModal(): void {
+function main(): void {
+    initializeContextValues();
+    drawStartModal();
+    drawVolumeSlider();
+}
 
-    let maxQuantity = 200;
+function drawVolumeSlider(): void {
+    const main = document.getElementsByClassName('main')[0];
+    let volumeSliderHTML = `
+            <input
+                type='range'
+                min= '0'
+                max= '.015'
+                value= '.005'
+                step= 'any'
+                class= 'vertical-slider'
+                id= 'volume-slider'
+                name= 'volume slider'>
+            </input>
+    `
+    volumeSliderHTML += `
+        <img src='./assets/icon-low-volume.svg' alt='volume speaker icon'>
+    `
+
+    const volumeContainer = document.createElement('div');
+    volumeContainer.classList.add('volume-container');
+    volumeContainer.innerHTML = volumeSliderHTML;
+
+    main.append(volumeContainer);
+
+    const volumeSlider = document.getElementById('volume-slider') as HTMLInputElement;
+    if (volumeSlider) {
+        volumeSlider.oninput = onVolumeInput;
+    }
+}
+
+function initializeContextValues(): void {
+    let maxQuantity = 100;
     let maxMaxSize = 300;
     let maxDensity = 100;
     let maxSpeed = 60;
@@ -33,11 +68,29 @@ function drawStartModal(): void {
             maxSize: { min: 1, max: maxMaxSize },
             speed: { min: 5, max: maxSpeed }
         },
+        Volume: .016,
+        VolumeRange: { min: 0, max: .016},
         BlobAudioContext: null,
+        NotesAsFrequencies: {
+            "C": [16.35, 32.70, 65.41, 130.81, 261.63, 523.25, 1046.50, 2093.00, 4186.01],
+           "Db":   [17.32, 34.65, 69.30, 138.59, 277.18, 554.37, 1108.73, 2217.46, 4434.92],
+            "D":   [18.35, 36.71, 73.42, 146.83, 293.66, 587.33, 1174.66, 2349.32, 4698.64],
+           "Eb":   [19.45, 38.89, 77.78, 155.56, 311.13, 622.25, 1244.51, 2489.02, 4978.03],
+            "E":   [20.60, 41.20, 82.41, 164.81, 329.63, 659.26, 1318.51, 2637.02],
+            "F":   [21.83, 43.65, 87.31, 174.61, 349.23, 698.46, 1396.91, 2793.83],
+           "Gb":   [23.12, 46.25, 92.50, 185.00, 369.99, 739.99, 1479.98, 2959.96],
+            "G":   [24.50, 49.00, 98.00, 196.00, 392.00, 783.99, 1567.98, 3135.96],
+           "Ab":   [25.96, 51.91, 103.83, 207.65, 415.30, 830.61, 1661.22, 3322.44],
+            "A":   [27.50, 55.00, 110.00, 220.00, 440.00, 880.00, 1760.00, 3520.00],
+           "Bb":   [29.14, 58.27, 116.54, 233.08, 466.16, 932.33, 1864.66, 3729.31],
+            "B":   [30.87, 61.74, 123.47, 246.94, 493.88, 987.77, 1975.53, 3951.07]
+        },
         IsModalOpen: false,
         CancelBlobDraws: new Array<CancelBlobDraw>()
     }
+}
 
+function drawStartModal(): void {
     const main = document.getElementsByClassName('main')[0];
     const modalBaseHTML = `
         <div class='modal-container'>
@@ -151,9 +204,17 @@ function onParameterInput(this: GlobalEventHandlers, event: Event): void {
     window.BlobiverseContext.ModalParameters[key] = parseInt(value);
 }
 
+function onVolumeInput(this: GlobalEventHandlers, event: Event): void {
+    const target = (event.target as HTMLInputElement);
+    const key = target.name;
+    const value = target.value;
+    console.log(key, value)
+    window.BlobiverseContext.Volume = parseFloat(target.value);
+}
+
 function onClickGenerateBtn(): void {
     const IsModalOpen = window.BlobiverseContext.IsModalOpen;
-    if (IsModalOpen){
+    if (IsModalOpen) {
         closeModal();
         drawBlobs();
     } else {
@@ -199,7 +260,7 @@ function clearBlobs(): void {
 
 function insertBlob(parentElement: HTMLElement, blob: Blob, blobIndex: number) {
     let timeoutId = setTimeout(() => {
-        
+
         blob.htmlElement.style.transition = `opacity ${window.BlobiverseContext.ModalParameters["speed"]}s`;
         blob.htmlElement.style.transition = `transform ${window.BlobiverseContext.ModalParameters["speed"]}s`;
         blob.htmlElement.style.transitionTimingFunction = "ease-in-out";
@@ -215,7 +276,7 @@ function insertBlob(parentElement: HTMLElement, blob: Blob, blobIndex: number) {
 
     }, 100 * blobIndex)
 
-    const cancelBlobDraw = function() {clearTimeout(timeoutId)}
+    const cancelBlobDraw = function () { clearTimeout(timeoutId) }
     window.BlobiverseContext.CancelBlobDraws.push(
         cancelBlobDraw
     )
@@ -242,8 +303,8 @@ function insertBlob(parentElement: HTMLElement, blob: Blob, blobIndex: number) {
 
         setTimeout(() => {
             const widthAsPercentOfMax = blob.position.width / window.BlobiverseContext.ModalParameters["maxSize"];
-            let duration =  Math.floor(5 * widthAsPercentOfMax);
-            if (duration < 2){
+            let duration = Math.floor(5 * widthAsPercentOfMax);
+            if (duration < 2) {
                 duration = 2;
             }
             blobElement.style.transition = `all ${duration}s ease-out`;
@@ -439,18 +500,36 @@ function getRandomDecimal(min: number, max: number): number {
 }
 
 function generateSound(params: GenerateSoundParameters) {
+    let gainValue = params.baseGainMultiplier * window.BlobiverseContext.Volume;
+    // Sets minimum volume except when muted
+    if (gainValue < .0025 && gainValue > 0.0001) {
+        gainValue = .0025
+    }
+    // This protects from uncomfortably loud sounds
+    if (gainValue > .005 && params.frequency > 400) {
+        gainValue = .005
+    }
+
     let o = params.audioContext.createOscillator();
     let g = params.audioContext.createGain();
     o.type = params.contextType;
     o.connect(g)
     o.frequency.value = params.frequency;
-    g.gain.value = params.gain;
+    g.gain.value = gainValue;
     g.connect(params.audioContext.destination)
     o.start(0);
 
     g.gain.exponentialRampToValueAtTime(
         0.00001, params.audioContext.currentTime + params.duration
     )
+}
+
+function getRandomNoteAsFrequency(): number {
+    let keyIndex = getRandomInt(0,11);
+    let octaveIndex= getRandomInt(2,6);
+    let key = Object.values(window.BlobiverseContext.NotesAsFrequencies)[keyIndex];
+    let frequency = key[octaveIndex];
+    return frequency;
 }
 
 function getRandomAudioContextType(): AudioContextType {
@@ -467,6 +546,7 @@ function generateAudioClickEvent(blobWidth: number, blobMaxWidth: number): (even
     const maxFrequency = 800 - (blobWidth * 2)
 
     const frequency = getRandomDecimal(100, maxFrequency);
+    // const frequency = getRandomNoteAsFrequency();
     const contextType = getRandomAudioContextType();
 
     const duration = getRandomDecimal(2, 8 * widthAsPercentOfMax);
@@ -478,21 +558,14 @@ function generateAudioClickEvent(blobWidth: number, blobMaxWidth: number): (even
             window.BlobiverseContext.BlobAudioContext = new AudioContext();
         }
 
-        let gain = widthAsPercentOfMax * .008;
-        if (gain < .0025) {
-            gain = .0025
-        }
-        // This protects from uncomfortably loud sounds
-        if (gain > .005 && frequency > 400) {
-            gain = .005
-        }
+        let gain = widthAsPercentOfMax;
 
         const GenerateSoundParameters = {
             audioContext: window.BlobiverseContext.BlobAudioContext,
             frequency: frequency,
             contextType: contextType,
             duration: duration,
-            gain: gain
+            baseGainMultiplier: gain
         }
         generateSound(GenerateSoundParameters)
     }
@@ -500,4 +573,4 @@ function generateAudioClickEvent(blobWidth: number, blobMaxWidth: number): (even
     return startButtonOnClick;
 }
 
-drawStartModal();
+main();
