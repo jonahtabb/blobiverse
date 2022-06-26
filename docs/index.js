@@ -1,19 +1,39 @@
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
-function drawStartModal() {
-    var maxQuantity = 200;
-    var maxMaxSize = 300;
-    var maxDensity = 100;
-    var maxSpeed = 60;
+function main() {
+    initializeContextValues();
+    drawStartModal();
+    drawVolumeSlider();
+}
+function drawVolumeSlider() {
+    const main = document.getElementsByClassName('main')[0];
+    let volumeSliderHTML = `
+            <input
+                type='range'
+                min= '0'
+                max= '.015'
+                value= '.005'
+                step= 'any'
+                class= 'vertical-slider'
+                id= 'volume-slider'
+                name= 'volume slider'>
+            </input>
+    `;
+    volumeSliderHTML += `
+        <img src='./assets/icon-low-volume.svg' alt='volume speaker icon'>
+    `;
+    const volumeContainer = document.createElement('div');
+    volumeContainer.classList.add('volume-container');
+    volumeContainer.innerHTML = volumeSliderHTML;
+    main.append(volumeContainer);
+    const volumeSlider = document.getElementById('volume-slider');
+    if (volumeSlider) {
+        volumeSlider.oninput = onVolumeInput;
+    }
+}
+function initializeContextValues() {
+    let maxQuantity = 100;
+    let maxMaxSize = 300;
+    let maxDensity = 100;
+    let maxSpeed = 60;
     if (window.outerWidth < 800) {
         maxQuantity = maxQuantity * (window.outerWidth / 6000);
         maxMaxSize = maxMaxSize * (window.outerWidth / 1000);
@@ -31,69 +51,141 @@ function drawStartModal() {
             maxSize: { min: 1, max: maxMaxSize },
             speed: { min: 5, max: maxSpeed }
         },
+        Volume: .016,
+        VolumeRange: { min: 0, max: .016 },
         BlobAudioContext: null,
+        NotesAsFrequencies: {
+            "C": [16.35, 32.70, 65.41, 130.81, 261.63, 523.25, 1046.50, 2093.00, 4186.01],
+            "Db": [17.32, 34.65, 69.30, 138.59, 277.18, 554.37, 1108.73, 2217.46, 4434.92],
+            "D": [18.35, 36.71, 73.42, 146.83, 293.66, 587.33, 1174.66, 2349.32, 4698.64],
+            "Eb": [19.45, 38.89, 77.78, 155.56, 311.13, 622.25, 1244.51, 2489.02, 4978.03],
+            "E": [20.60, 41.20, 82.41, 164.81, 329.63, 659.26, 1318.51, 2637.02],
+            "F": [21.83, 43.65, 87.31, 174.61, 349.23, 698.46, 1396.91, 2793.83],
+            "Gb": [23.12, 46.25, 92.50, 185.00, 369.99, 739.99, 1479.98, 2959.96],
+            "G": [24.50, 49.00, 98.00, 196.00, 392.00, 783.99, 1567.98, 3135.96],
+            "Ab": [25.96, 51.91, 103.83, 207.65, 415.30, 830.61, 1661.22, 3322.44],
+            "A": [27.50, 55.00, 110.00, 220.00, 440.00, 880.00, 1760.00, 3520.00],
+            "Bb": [29.14, 58.27, 116.54, 233.08, 466.16, 932.33, 1864.66, 3729.31],
+            "B": [30.87, 61.74, 123.47, 246.94, 493.88, 987.77, 1975.53, 3951.07]
+        },
         IsModalOpen: false,
         CancelBlobDraws: new Array()
     };
-    var main = document.getElementsByClassName('main')[0];
-    var modalBaseHTML = "\n        <div class='modal-container'>\n            <div class='modal-background'></div>\n            <div class='modal'>\n                <h1>Blobiverse Generator</h1>\n                <label>Quantity</label>\n                <input\n                    type='range'\n                    min= '".concat(window.BlobiverseContext.ModalParameterRanges.quantity.min, "'\n                    max= '").concat(window.BlobiverseContext.ModalParameterRanges.quantity.max, "'\n                    value= '").concat(window.BlobiverseContext.ModalParameters.quantity, "'\n                    class='modal-slider'\n                    id='quantity-input'\n                    name='quantity'>\n                </input>\n                <label>Density</label>\n                <input\n                    type='range'\n                    min= '").concat(window.BlobiverseContext.ModalParameterRanges.density.min, "'\n                    max= '").concat(window.BlobiverseContext.ModalParameterRanges.density.max, "'\n                    value= '").concat(window.BlobiverseContext.ModalParameters.density, "'\n                    class='modal-slider reverse-display'\n                    id='density-input'\n                    name='density'>\n                </input>\n                <label>Max Size</label>\n                <input\n                    type='range'\n                    min= '").concat(window.BlobiverseContext.ModalParameterRanges.maxSize.min, "'\n                    max= '").concat(window.BlobiverseContext.ModalParameterRanges.maxSize.max, "'\n                    value= '").concat(window.BlobiverseContext.ModalParameters.maxSize, "'\n                    class= 'modal-slider'\n                    id= 'max-size-input'\n                    name= 'maxSize'>\n                </input>\n                <label>Speed</label>\n                <input\n                    type='range'\n                    min='").concat(window.BlobiverseContext.ModalParameterRanges.speed.min, "'\n                    max='").concat(window.BlobiverseContext.ModalParameterRanges.speed.max, "'\n                    value= '").concat(window.BlobiverseContext.ModalParameters.speed, "'\n                    class='modal-slider reverse-display'\n                    id='speed-input'\n                    name='speed'>\n                </input>\n            </div>\n        </div>\n    ");
+}
+function drawStartModal() {
+    const main = document.getElementsByClassName('main')[0];
+    const modalBaseHTML = `
+        <div class='modal-container'>
+            <div class='modal-background'></div>
+            <div class='modal'>
+                <h1>Blobiverse Generator</h1>
+                <label>Quantity</label>
+                <input
+                    type='range'
+                    min= '${window.BlobiverseContext.ModalParameterRanges.quantity.min}'
+                    max= '${window.BlobiverseContext.ModalParameterRanges.quantity.max}'
+                    value= '${window.BlobiverseContext.ModalParameters.quantity}'
+                    class='modal-slider'
+                    id='quantity-input'
+                    name='quantity'>
+                </input>
+                <label>Density</label>
+                <input
+                    type='range'
+                    min= '${window.BlobiverseContext.ModalParameterRanges.density.min}'
+                    max= '${window.BlobiverseContext.ModalParameterRanges.density.max}'
+                    value= '${window.BlobiverseContext.ModalParameters.density}'
+                    class='modal-slider reverse-display'
+                    id='density-input'
+                    name='density'>
+                </input>
+                <label>Max Size</label>
+                <input
+                    type='range'
+                    min= '${window.BlobiverseContext.ModalParameterRanges.maxSize.min}'
+                    max= '${window.BlobiverseContext.ModalParameterRanges.maxSize.max}'
+                    value= '${window.BlobiverseContext.ModalParameters.maxSize}'
+                    class= 'modal-slider'
+                    id= 'max-size-input'
+                    name= 'maxSize'>
+                </input>
+                <label>Speed</label>
+                <input
+                    type='range'
+                    min='${window.BlobiverseContext.ModalParameterRanges.speed.min}'
+                    max='${window.BlobiverseContext.ModalParameterRanges.speed.max}'
+                    value= '${window.BlobiverseContext.ModalParameters.speed}'
+                    class='modal-slider reverse-display'
+                    id='speed-input'
+                    name='speed'>
+                </input>
+            </div>
+        </div>
+    `;
     if (!main)
         return;
     main.innerHTML = modalBaseHTML;
     window.BlobiverseContext.IsModalOpen = true;
-    var generateButton = document.createElement('button');
+    const generateButton = document.createElement('button');
     generateButton.id = 'modal-button';
     generateButton.type = 'button';
     main.append(generateButton);
-    setTimeout(function () { generateButton.style.opacity = "1"; }, 100);
-    var modalContainer = document.getElementsByClassName('modal-container')[0];
+    setTimeout(() => { generateButton.style.opacity = "1"; }, 100);
+    const modalContainer = document.getElementsByClassName('modal-container')[0];
     if (modalContainer) {
-        setTimeout(function () { modalContainer.style.opacity = "1"; }, 100);
+        setTimeout(() => { modalContainer.style.opacity = "1"; }, 100);
     }
-    var modalButton = document.getElementById('modal-button');
+    const modalButton = document.getElementById('modal-button');
     if (modalButton) {
         modalButton.onclick = onClickGenerateBtn;
     }
-    var quantityInput = document.getElementById('quantity-input');
+    const quantityInput = document.getElementById('quantity-input');
     if (quantityInput) {
         quantityInput.oninput = onParameterInput;
     }
-    var densityInput = document.getElementById('density-input');
+    const densityInput = document.getElementById('density-input');
     if (densityInput) {
         densityInput.oninput = onParameterInput;
     }
-    var maxSizeInput = document.getElementById('max-size-input');
+    const maxSizeInput = document.getElementById('max-size-input');
     if (maxSizeInput) {
         maxSizeInput.oninput = onParameterInput;
     }
-    var speedInput = document.getElementById('speed-input');
+    const speedInput = document.getElementById('speed-input');
     if (speedInput) {
         speedInput.oninput = onParameterInput;
     }
 }
 function closeModal() {
-    var modalContainer = document.getElementsByClassName('modal-container')[0];
+    const modalContainer = document.getElementsByClassName('modal-container')[0];
     if (!modalContainer)
         return;
     window.BlobiverseContext.IsModalOpen = false;
     modalContainer.classList.add('hide');
 }
 function openModal() {
-    var modalContainer = document.getElementsByClassName('modal-container')[0];
+    const modalContainer = document.getElementsByClassName('modal-container')[0];
     if (!modalContainer)
         return;
     window.BlobiverseContext.IsModalOpen = true;
     modalContainer.classList.remove('hide');
 }
 function onParameterInput(event) {
-    var target = event.target;
-    var key = target.name;
-    var value = target.value;
+    const target = event.target;
+    const key = target.name;
+    const value = target.value;
     console.log(key, value);
     window.BlobiverseContext.ModalParameters[key] = parseInt(value);
 }
+function onVolumeInput(event) {
+    const target = event.target;
+    const key = target.name;
+    const value = target.value;
+    console.log(key, value);
+    window.BlobiverseContext.Volume = parseFloat(target.value);
+}
 function onClickGenerateBtn() {
-    var IsModalOpen = window.BlobiverseContext.IsModalOpen;
+    const IsModalOpen = window.BlobiverseContext.IsModalOpen;
     if (IsModalOpen) {
         closeModal();
         drawBlobs();
@@ -104,89 +196,93 @@ function onClickGenerateBtn() {
     }
 }
 function drawBlobs() {
-    var blobPositions = new Array();
-    var main = document.querySelector('.main');
+    const blobPositions = new Array();
+    const main = document.querySelector('.main');
     if (!main)
         return;
-    var mainWidth = ((main === null || main === void 0 ? void 0 : main.clientWidth) || 0);
-    var mainHeight = ((main === null || main === void 0 ? void 0 : main.clientHeight) || 0);
-    var tryDrawCount = 0;
-    for (var i = 0; i < window.BlobiverseContext.ModalParameters["quantity"] && tryDrawCount < 1000; i++) {
+    const mainWidth = ((main === null || main === void 0 ? void 0 : main.clientWidth) || 0);
+    const mainHeight = ((main === null || main === void 0 ? void 0 : main.clientHeight) || 0);
+    let tryDrawCount = 0;
+    for (let i = 0; i < window.BlobiverseContext.ModalParameters["quantity"] && tryDrawCount < 1000; i++) {
         tryDrawCount++;
-        var blobPosition = generateBlobPosition(mainWidth, mainHeight);
-        var positionIsAvailable = isBlobPositionAvailable(blobPosition, blobPositions);
+        const blobPosition = generateBlobPosition(mainWidth, mainHeight);
+        const positionIsAvailable = isBlobPositionAvailable(blobPosition, blobPositions);
         if (positionIsAvailable == false) {
             i--;
             continue;
         }
-        var blob = createBlob(blobPosition);
+        const blob = createBlob(blobPosition);
         blobPositions.push(blob.position);
         insertBlob(main, blob, i);
     }
 }
 function clearBlobs() {
     // clearTimeout for blobs that are not yet on the dom
-    window.BlobiverseContext.CancelBlobDraws.forEach(function (cancelBlobDraw) {
+    window.BlobiverseContext.CancelBlobDraws.forEach(cancelBlobDraw => {
         cancelBlobDraw();
     });
     // remove blobs that are already on the dom
-    var blobs = document.getElementsByClassName('blob-container-1');
-    var blobsArray = Array.from(blobs);
-    blobsArray.forEach(function (element) {
+    const blobs = document.getElementsByClassName('blob-container-1');
+    let blobsArray = Array.from(blobs);
+    blobsArray.forEach((element) => {
         element.remove();
     });
 }
 function insertBlob(parentElement, blob, blobIndex) {
-    var timeoutId = setTimeout(function () {
-        blob.htmlElement.style.transition = "opacity ".concat(window.BlobiverseContext.ModalParameters["speed"], "s");
-        blob.htmlElement.style.transition = "transform ".concat(window.BlobiverseContext.ModalParameters["speed"], "s");
+    let timeoutId = setTimeout(() => {
+        blob.htmlElement.style.transition = `opacity ${window.BlobiverseContext.ModalParameters["speed"]}s`;
+        blob.htmlElement.style.transition = `transform ${window.BlobiverseContext.ModalParameters["speed"]}s`;
         blob.htmlElement.style.transitionTimingFunction = "ease-in-out";
         blob.htmlElement.style.transform = "scale(0) rotate(20deg)";
         blob.htmlElement.style.opacity = ".2";
         blob.htmlContainer.append(blob.htmlElement);
         parentElement === null || parentElement === void 0 ? void 0 : parentElement.append(blob.htmlContainer);
-        setTimeout(function () {
+        setTimeout(() => {
             blob.htmlElement.style.transform = "scale(1) rotate(120deg)";
-            blob.htmlElement.style.opacity = "1";
+            blob.htmlElement.style.opacity = `1`;
         }, 100);
     }, 100 * blobIndex);
-    var cancelBlobDraw = function () { clearTimeout(timeoutId); };
+    const cancelBlobDraw = function () { clearTimeout(timeoutId); };
     window.BlobiverseContext.CancelBlobDraws.push(cancelBlobDraw);
-    var blobElement = blob.htmlElement;
-    blobElement.addEventListener("click", function (event) {
-        var currentWidth = blob.position.width;
+    const blobElement = blob.htmlElement;
+    blobElement.addEventListener("click", (event) => {
+        let currentWidth = blob.position.width;
         if (event.target instanceof HTMLElement) {
             currentWidth = event.target.clientWidth;
         }
-        var currentScale = currentWidth / blob.position.width;
-        var clickScale = currentScale * 1.1;
+        const currentScale = currentWidth / blob.position.width;
+        const clickScale = currentScale * 1.1;
         blobElement.style.transition = "all .2s ease-out";
         blobElement.style.boxShadow =
-            "0 0 35px 15px hsla(0, 100%, 98%, .5),\n        0 0 65px 25px ".concat(blob.colors.boxShadow1, ",\n        0 0 95px 35px ").concat(blob.colors.boxShadow2);
-        blobElement.style.transform = "scale(".concat(clickScale, ") rotate(120deg)");
-        setTimeout(function () {
-            var widthAsPercentOfMax = blob.position.width / window.BlobiverseContext.ModalParameters["maxSize"];
-            var duration = Math.floor(5 * widthAsPercentOfMax);
+            `0 0 35px 15px hsla(0, 100%, 98%, .5),
+        0 0 65px 25px ${blob.colors.boxShadow1},
+        0 0 95px 35px ${blob.colors.boxShadow2}`;
+        blobElement.style.transform = `scale(${clickScale}) rotate(120deg)`;
+        setTimeout(() => {
+            const widthAsPercentOfMax = blob.position.width / window.BlobiverseContext.ModalParameters["maxSize"];
+            let duration = Math.floor(5 * widthAsPercentOfMax);
             if (duration < 2) {
                 duration = 2;
             }
-            blobElement.style.transition = "all ".concat(duration, "s ease-out");
-            blobElement.style.transform = "scale(".concat(currentScale, ") rotate(120deg)");
+            blobElement.style.transition = `all ${duration}s ease-out`;
+            blobElement.style.transform = `scale(${currentScale}) rotate(120deg)`;
             blobElement.style.boxShadow =
-                "0 0 30px 10px hsla(0, 100%, 98%, .25),\n            0 0 60px 20px ".concat(blob.colors.boxShadow1, ",\n            0 0 90px 30px ").concat(blob.colors.boxShadow2);
+                `0 0 30px 10px hsla(0, 100%, 98%, .25),
+            0 0 60px 20px ${blob.colors.boxShadow1},
+            0 0 90px 30px ${blob.colors.boxShadow2}`;
         }, .2 * 1000);
     });
-    var blobOnClickEvent = generateAudioClickEvent(blob.position.width, window.BlobiverseContext.ModalParameters["maxSize"]);
+    const blobOnClickEvent = generateAudioClickEvent(blob.position.width, window.BlobiverseContext.ModalParameters["maxSize"]);
     blobElement.addEventListener("click", blobOnClickEvent);
 }
 function generateBlobPosition(containerWidth, containerHeight) {
-    var randomSize = getRandomSize();
-    var randomPosition = getRandomOffset();
-    var yOffsetPixels = randomPosition.yOffset * containerHeight;
-    var xOffsetPixels = randomPosition.xOffset * containerWidth;
-    var yCenter = yOffsetPixels + (randomSize.height / 2);
-    var xCenter = xOffsetPixels + (randomSize.width / 2);
-    var blobPosition = {
+    const randomSize = getRandomSize();
+    const randomPosition = getRandomOffset();
+    const yOffsetPixels = randomPosition.yOffset * containerHeight;
+    const xOffsetPixels = randomPosition.xOffset * containerWidth;
+    const yCenter = yOffsetPixels + (randomSize.height / 2);
+    const xCenter = xOffsetPixels + (randomSize.width / 2);
+    const blobPosition = {
         yTop: yOffsetPixels,
         yBottom: yOffsetPixels + randomSize.height,
         xLeft: xOffsetPixels,
@@ -202,12 +298,11 @@ function generateBlobPosition(containerWidth, containerHeight) {
     return blobPosition;
 }
 function isBlobPositionAvailable(newPosition, blobPositions) {
-    for (var _i = 0, blobPositions_1 = blobPositions; _i < blobPositions_1.length; _i++) {
-        var blob = blobPositions_1[_i];
-        var centerDistance = getDistance(newPosition.center, blob.center) - window.BlobiverseContext.ModalParameters["density"];
-        var radiusA = newPosition.radius;
-        var radiusB = blob.radius;
-        var radiiSumSquared = (radiusA + radiusB) ^ 2;
+    for (const blob of blobPositions) {
+        const centerDistance = getDistance(newPosition.center, blob.center) - window.BlobiverseContext.ModalParameters["density"];
+        const radiusA = newPosition.radius;
+        const radiusB = blob.radius;
+        const radiiSumSquared = (radiusA + radiusB) ^ 2;
         if (centerDistance <= radiiSumSquared) {
             return false;
         }
@@ -215,41 +310,43 @@ function isBlobPositionAvailable(newPosition, blobPositions) {
     return true;
 }
 function getDistance(pointA, pointB) {
-    var xPointA = pointA.xCenter;
-    var yPointA = pointA.yCenter;
-    var xPointB = pointB.xCenter;
-    var yPointB = pointB.yCenter;
-    var xDist = Math.abs(xPointA - xPointB);
-    var yDist = Math.abs(yPointA - yPointB);
+    const xPointA = pointA.xCenter;
+    const yPointA = pointA.yCenter;
+    const xPointB = pointB.xCenter;
+    const yPointB = pointB.yCenter;
+    const xDist = Math.abs(xPointA - xPointB);
+    const yDist = Math.abs(yPointA - yPointB);
     return Math.sqrt((xDist * xDist) + (yDist * yDist));
 }
 function createBlob(blobPosition) {
-    var blobContainer = document.createElement('div');
+    const blobContainer = document.createElement('div');
     blobContainer.classList.add('blob-container-1');
-    var blobElement = document.createElement('div');
+    const blobElement = document.createElement('div');
     blobElement.classList.add('blob-1');
-    blobElement.style.width = "".concat(blobPosition.width, "px");
-    blobElement.style.height = "".concat(blobPosition.height, "px");
-    blobElement.style.top = "".concat(blobPosition.yTop, "px");
-    blobElement.style.left = "".concat(blobPosition.xLeft, "px");
-    var blobShape = getRandomShape();
+    blobElement.style.width = `${blobPosition.width}px`;
+    blobElement.style.height = `${blobPosition.height}px`;
+    blobElement.style.top = `${blobPosition.yTop}px`;
+    blobElement.style.left = `${blobPosition.xLeft}px`;
+    const blobShape = getRandomShape();
     blobElement.style.borderRadius = blobShape.borderRadiusString;
-    var blobColors = getRandomBlobColors();
+    const blobColors = getRandomBlobColors();
     blobElement.style.backgroundColor = blobColors.backgroundColor;
     blobElement.style.backgroundImage = blobColors.backgroundImage;
     blobElement.style.boxShadow =
-        "0 0 30px 10px hsla(0, 100%, 98%, .25),\n        0 0 60px 20px ".concat(blobColors.boxShadow1, ",\n        0 0 90px 30px ").concat(blobColors.boxShadow2);
-    var blob = {
+        `0 0 30px 10px hsla(0, 100%, 98%, .25),
+        0 0 60px 20px ${blobColors.boxShadow1},
+        0 0 90px 30px ${blobColors.boxShadow2}`;
+    const blob = {
         htmlContainer: blobContainer,
         htmlElement: blobElement,
-        position: __assign({}, blobPosition),
+        position: Object.assign({}, blobPosition),
         shape: blobShape,
         colors: blobColors
     };
     return blob;
 }
 function getRandomShape() {
-    var blobShape = {
+    const blobShape = {
         1: Math.floor(Math.random() * (80 - 20 + 1) + 20),
         2: Math.floor(Math.random() * (80 - 20 + 1) + 20),
         3: Math.floor(Math.random() * (80 - 20 + 1) + 20),
@@ -260,26 +357,26 @@ function getRandomShape() {
         8: Math.floor(Math.random() * (80 - 20 + 1) + 20),
         borderRadiusString: "",
     };
-    blobShape.borderRadiusString = "".concat(blobShape[1], "% ").concat(blobShape[2], "% ").concat(blobShape[3], "% ").concat(blobShape[4], "% / ").concat(blobShape[5], "% ").concat(blobShape[6], "% ").concat(blobShape[7], "% ").concat(blobShape[8], "%");
+    blobShape.borderRadiusString = `${blobShape[1]}% ${blobShape[2]}% ${blobShape[3]}% ${blobShape[4]}% / ${blobShape[5]}% ${blobShape[6]}% ${blobShape[7]}% ${blobShape[8]}%`;
     return blobShape;
 }
 function getRandomSize() {
-    var randomSize = Math.random() * window.BlobiverseContext.ModalParameters["maxSize"];
+    const randomSize = Math.random() * window.BlobiverseContext.ModalParameters["maxSize"];
     return { width: randomSize, height: randomSize };
 }
 function getRandomOffset() {
-    var xRandomOffset = Math.random();
-    var yRandomOffset = Math.random();
+    const xRandomOffset = Math.random();
+    const yRandomOffset = Math.random();
     return { xOffset: xRandomOffset, yOffset: yRandomOffset };
 }
 function getRandomBlobColors() {
-    var color1 = getRandomColor(1);
-    var color2 = getRandomColor(1);
-    var degrees = getRandomDegrees();
-    var linearGradient = createLinearGradient(color1.hslaString, color2.hslaString, degrees);
-    var boxShadow1 = copyColor(color1, .2);
-    var boxShadow2 = copyColor(color2, .2);
-    var blobColors = {
+    const color1 = getRandomColor(1);
+    const color2 = getRandomColor(1);
+    const degrees = getRandomDegrees();
+    const linearGradient = createLinearGradient(color1.hslaString, color2.hslaString, degrees);
+    const boxShadow1 = copyColor(color1, .2);
+    const boxShadow2 = copyColor(color2, .2);
+    const blobColors = {
         color1: color1,
         color2: color2,
         backgroundColor: color1.hslaString,
@@ -290,11 +387,11 @@ function getRandomBlobColors() {
     return blobColors;
 }
 function getRandomColor(transparency) {
-    var hue = getRandomInt(1, 358);
-    var saturation = getRandomInt(30, 100);
-    var luminosity = getRandomInt(20, 80);
-    var alpha = transparency;
-    var color = {
+    const hue = getRandomInt(1, 358);
+    const saturation = getRandomInt(30, 100);
+    const luminosity = getRandomInt(20, 80);
+    const alpha = transparency;
+    const color = {
         h: hue,
         s: saturation,
         l: luminosity,
@@ -305,7 +402,7 @@ function getRandomColor(transparency) {
     return color;
 }
 function copyColor(color, transparency) {
-    var copiedColor = {
+    const copiedColor = {
         h: color.h,
         s: color.s,
         l: color.l,
@@ -316,13 +413,13 @@ function copyColor(color, transparency) {
     return copiedColor;
 }
 function colorToHslaString(color) {
-    return "hsla(".concat(color.h, ", ").concat(color.s, "%, ").concat(color.l, "%, ").concat(color.a, ")");
+    return `hsla(${color.h}, ${color.s}%, ${color.l}%, ${color.a})`;
 }
 function getRandomDegrees() {
     return Math.floor(Math.random() * (360));
 }
 function createLinearGradient(color1, color2, degrees) {
-    return "linear-gradient(".concat(degrees, "deg, ").concat(color1, " 0%, ").concat(color2, " 100%)");
+    return `linear-gradient(${degrees}deg, ${color1} 0%, ${color2} 100%)`;
 }
 function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min);
@@ -331,53 +428,63 @@ function getRandomDecimal(min, max) {
     return Math.random() * (max - min + 1) + min;
 }
 function generateSound(params) {
-    var o = params.audioContext.createOscillator();
-    var g = params.audioContext.createGain();
+    let gainValue = params.baseGainMultiplier * window.BlobiverseContext.Volume;
+    // Sets minimum volume except when muted
+    if (gainValue < .0025 && gainValue > 0.0001) {
+        gainValue = .0025;
+    }
+    // This protects from uncomfortably loud sounds
+    if (gainValue > .005 && params.frequency > 400) {
+        gainValue = .005;
+    }
+    let o = params.audioContext.createOscillator();
+    let g = params.audioContext.createGain();
     o.type = params.contextType;
     o.connect(g);
     o.frequency.value = params.frequency;
-    g.gain.value = params.gain;
+    g.gain.value = gainValue;
     g.connect(params.audioContext.destination);
     o.start(0);
     g.gain.exponentialRampToValueAtTime(0.00001, params.audioContext.currentTime + params.duration);
 }
+function getRandomNoteAsFrequency() {
+    let keyIndex = getRandomInt(0, 11);
+    let octaveIndex = getRandomInt(2, 6);
+    let key = Object.values(window.BlobiverseContext.NotesAsFrequencies)[keyIndex];
+    let frequency = key[octaveIndex];
+    return frequency;
+}
 function getRandomAudioContextType() {
-    var types = {
+    const types = {
         1: "sine",
         2: "triangle"
     };
-    var randomTypeKey = getRandomInt(1, 2);
+    const randomTypeKey = getRandomInt(1, 2);
     return types[randomTypeKey];
 }
 function generateAudioClickEvent(blobWidth, blobMaxWidth) {
-    var widthAsPercentOfMax = blobWidth / blobMaxWidth;
-    var maxFrequency = 800 - (blobWidth * 2);
-    var frequency = getRandomDecimal(100, maxFrequency);
-    var contextType = getRandomAudioContextType();
-    var duration = getRandomDecimal(2, 8 * widthAsPercentOfMax);
+    const widthAsPercentOfMax = blobWidth / blobMaxWidth;
+    const maxFrequency = 800 - (blobWidth * 2);
+    const frequency = getRandomDecimal(100, maxFrequency);
+    // const frequency = getRandomNoteAsFrequency();
+    const contextType = getRandomAudioContextType();
+    const duration = getRandomDecimal(2, 8 * widthAsPercentOfMax);
     function startButtonOnClick(event) {
         event.preventDefault();
         if (!window.BlobiverseContext.BlobAudioContext) {
             window.BlobiverseContext.BlobAudioContext = new AudioContext();
         }
-        var gain = widthAsPercentOfMax * .008;
-        if (gain < .0025) {
-            gain = .0025;
-        }
-        // This protects from uncomfortably loud sounds
-        if (gain > .005 && frequency > 400) {
-            gain = .005;
-        }
-        var GenerateSoundParameters = {
+        let gain = widthAsPercentOfMax;
+        const GenerateSoundParameters = {
             audioContext: window.BlobiverseContext.BlobAudioContext,
             frequency: frequency,
             contextType: contextType,
             duration: duration,
-            gain: gain
+            baseGainMultiplier: gain
         };
         generateSound(GenerateSoundParameters);
     }
     return startButtonOnClick;
 }
-drawStartModal();
+main();
 export {};
