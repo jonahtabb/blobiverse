@@ -5,7 +5,7 @@
   "main": "src/index.ts",
   "scripts": {
     "dev": "tsc --watch",
-    "build": "tsc && npm run build:cp-public",
+    "build": "tsc && npm run build:xcopy",
     "buildprod": "mkdir -p dist && tsc && npm run build:cp",
     "build:xcopy": "xcopy /e/h/y/q \"./public\" \"./dist\"",
     "build:cp": "cp -a ./public/. ./dist/",
