@@ -8,7 +8,7 @@
     "build": "tsc && npm run build:cp-public",
     "buildprod": "tsc && npm run build:linux",
     "build:cp-public": "xcopy /e/h/y/q \"./public\" \"./dist\"",
-    "build:linux": "mkdir -p \"./dist\" && cp -r \"./public\" \"./dist\"",
+    "build:linux": "mkdir -p dist && cp -r \"./public\" \"./dist\"",
     "type": "tsc --noEmit"
   },
   "keywords": [],
