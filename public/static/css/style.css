@@ -1,0 +1,223 @@
+:root {
+    --main-color: rgb(223, 229, 255);
+    font-family: 'Teko', sans-serif;
+    color: var(--main-color);
+}
+
+body {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    padding: 0 0 0 0;
+    margin: 0 0 0 0;
+    background: radial-gradient(hsl(218, 100%, 3%), hsl(218, 100%, 14%));
+}
+
+p {
+    font-size: 1rem;
+}
+
+label {
+    font-size: 1.5rem;
+    font-weight: 400;
+    letter-spacing: .2rem;
+    color: var(--main-color);
+}
+
+.main {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.blob-1 {
+    position: fixed;
+    border-radius: 70% 30% 30% 70% / 60% 40% 48% 45%;
+    cursor: pointer;
+}
+
+.blob-container-1 {
+    animation-duration: 20s;
+    animation-name: blobpulse;
+    animation-iteration-count: infinite;
+}
+
+.modal-background {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: radial-gradient(hsl(218, 100%, 3%), hsl(218, 100%, 10%));
+}
+
+.modal-container {
+    opacity: 0;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 1s cubic-bezier(0.455, 0.03, 0.515, 0.955);
+}
+
+.modal-container.hide {
+    display: none;
+}
+
+.modal {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 50%;
+    max-width: 500px;
+    min-width: 300px;
+    z-index: 100;
+}
+
+.modal-slider {
+    -webkit-appearance: none;
+    width: 50%;
+    min-width: 200px;
+    height: 10px;
+    border-radius: 5px;  
+    background: rgba(0, 102, 255, .90);
+    outline: none;
+    opacity: 0.7;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+    box-shadow: rgba(0, 102, 255, 0.76) 0px 5px, rgba(0, 102, 255,  0.3) 0px 10px, rgba(0, 102, 255,0.2) 0px 15px, rgba(0, 102, 255, 0.1) 0px 20px, rgba(0, 102, 255, 0.05) 0px 25px;
+    margin-bottom: 35px;
+}
+
+.modal-slider.reverse-display {
+    direction: rtl;
+}
+
+.modal-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 33% 57% 43% 32% / 62% 73% 61% 32%;
+    box-shadow: 0 0 10px 8px hsla(0, 100%, 98%, .15), 0 0 12px 10px hsla(0, 100%, 98%, .15), 0 0 20px 15px hsla(0, 100%, 98%, .15);
+    background: var(--main-color);
+    cursor: pointer;
+  }
+
+.modal-slider::-moz-range-thumb {
+  width: 25px; /* Set a specific slider handle width */
+  height: 25px; /* Slider handle height */
+  background: var(--main-color); /* Green background */
+  cursor: pointer; /* Cursor on hover */
+}
+
+.volume-control-container {
+    position: fixed;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    right: 6px;
+    bottom: 6px;
+    z-index: 100;
+}
+
+.volume-icon {
+    width: 25px;
+}
+
+.volume-slider-container {
+    right: 20px;
+    bottom: 100px;
+    transform-origin: 25% 0%;
+}
+
+.vertical-slider {
+    -webkit-appearance: none;
+    width: 150px;
+    height: 10px;
+    border-radius: 5px;  
+    background: rgba(0, 102, 255, .90);
+    outline: none;
+    opacity: 0.7;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+    /* box-shadow: rgba(0, 102, 255, 0.76) 0px 5px, rgba(0, 102, 255,  0.3) 0px 10px, rgba(0, 102, 255,0.2) 0px 15px, rgba(0, 102, 255, 0.1) 0px 20px, rgba(0, 102, 255, 0.05) 0px 25px; */
+}
+
+.vertical-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 33% 57% 43% 32% / 62% 73% 61% 32%;
+    box-shadow: 0 0 10px 8px hsla(0, 100%, 98%, .15), 0 0 12px 10px hsla(0, 100%, 98%, .15), 0 0 20px 15px hsla(0, 100%, 98%, .15);
+    background: var(--main-color);
+    cursor: pointer;
+  }
+
+.vertical-slider::-moz-range-thumb {
+  width: 25px; /* Set a specific slider handle width */
+  height: 25px; /* Slider handle height */
+  background: var(--main-color); /* Green background */
+  cursor: pointer; /* Cursor on hover */
+}
+
+#modal-button {
+    opacity: 0;
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, 0);
+    bottom: 40px;
+    font-family: 'Teko', sans-serif;
+    height: 50px;
+    width: 50px;
+    background-color: hsl(218,28%,21%);
+    border-radius: 70% 30% 30% 70% / 60% 40% 48% 45%;
+    border-color: transparent;
+    box-shadow: 0 0 20px 15px hsla(0, 100%, 98%, .15), 0 0 25px 20px hsla(0, 100%, 98%, .15), 0 0 40px 30px hsla(0, 100%, 98%, .15);
+    cursor: pointer;
+    z-index: 200;
+    transition: all .5s ease-in-out;
+}
+
+#modal-button:hover {
+    transform: scale(1.1) translate(-50%, 0);
+}
+
+@media only screen and (max-width: 480px) {
+    #modal-button {
+        height: 20px;
+        width: 20px;
+        bottom: 70px;
+    }
+}
+
+@keyframes blobpulse {
+    from {
+        transform: translate(0px, 0px);
+    }
+
+    20% {
+        transform: translate(-4px, 0px);
+    }
+
+    40% {
+        transform: translate(0px, 5px);
+    }
+
+    60% {
+        transform: translate(-5px, 3px);
+    }
+
+    80% {
+        transform: translate(0px, -2px);
+    }
+
+    to {
+        transform: translate(0px, 0px);
+    }
+}
